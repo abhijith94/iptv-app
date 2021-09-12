@@ -1,0 +1,62 @@
+.home {
+  color: red;
+  padding-top: 1%;
+  padding-left: 3%;
+
+  .top {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-end;
+
+    .tvlogo {
+      width: 20rem;
+      margin-right: 20px;
+    }
+
+    .title {
+      font-size: 10rem;
+      color: white;
+    }
+  }
+
+  .addToPlaylistContainer {
+    margin-top: 5%;
+    .addToPlaylistBtn {
+      border-radius: 50%;
+      background: #9d50bb; /* fallback for old browsers */
+      background: -webkit-linear-gradient(
+        to right,
+        #6e48aa,
+        #9d50bb
+      ); /* Chrome 10-25, Safari 5.1-6 */
+      background: linear-gradient(
+        to right,
+        #6e48aa,
+        #9d50bb
+      ); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+      padding: 5px;
+      border: none;
+      padding: 30px;
+      :focus {
+        outline: 0;
+      }
+    }
+  }
+
+  .breakline {
+    margin-top: 1%;
+  }
+
+  .bottom {
+    margin-top: 2%;
+
+    .playlistTable {
+      .tableCell {
+        span {
+          font-weight: 600;
+          font-size: 1.5rem;
+        }
+      }
+    }
+  }
+}

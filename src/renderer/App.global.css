@@ -1,0 +1,54 @@
+/*
+ * @NOTE: Prepend a `~` to css file paths that are in your node_modules
+ *        See https://github.com/webpack-contrib/sass-loader#imports
+ */
+@font-face {
+  font-family: 'Roboto';
+  font-weight: 300;
+  src: local('Roboto'),
+    url(../../assets/fonts/Roboto-Light.ttf) format('truetype');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-weight: 400;
+  src: local('Roboto'),
+    url(../../assets/fonts/Roboto-Regular.ttf) format('truetype');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-weight: 700;
+  src: local('Roboto'),
+    url(../../assets/fonts/Roboto-Bold.ttf) format('truetype');
+}
+
+html {
+  font-size: 62.5%;
+}
+
+body {
+  position: relative;
+  color: white;
+  height: 100vh;
+  background: #8e2de2; /* fallback for old browsers */
+  background: -webkit-linear-gradient(
+    to bottom,
+    #9362f0,
+    #8a098a
+  ); /* Chrome 10-25, Safari 5.1-6 */
+  background: linear-gradient(
+    to bottom,
+    #9362f0,
+    #8a098a
+  ); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+  font-family: Roboto, sans-serif;
+  overflow-y: hidden;
+  /* display: flex;
+  justify-content: center;
+  align-items: center; */
+}
+
+h1 {
+  margin: 0;
+}
