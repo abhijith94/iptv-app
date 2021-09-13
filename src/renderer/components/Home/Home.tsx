@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { BaseSyntheticEvent, useState } from 'react';
 import {
   PlusIcon,
   IconButton,
@@ -7,11 +7,22 @@ import {
   TrashIcon,
   RefreshIcon,
   EditIcon,
+  Dialog,
+  TextInputField,
 } from 'evergreen-ui';
 import styles from './Home.scss';
 import tvsvg from '../../../../assets/live_tv_white_24dp.svg';
 
+declare global {
+  interface Window {
+    // eslint-disable-next-line
+    electron: any;
+  }
+}
+
 function Home() {
+  const { ipcRenderer } = window.electron; // eslint-disable-next-line
+
   const date = `${new Date()
     .toDateString()
     .split(' ')
@@ -22,18 +33,26 @@ function Home() {
     {
       id: 1,
       name: 'index.m3u',
+      url: '',
       channels: 2247,
       createdAt: date,
       updatedAt: date,
     },
-    {
-      id: 2,
-      name: 'index.m3u',
-      channels: 3657,
-      createdAt: date,
-      updatedAt: date,
-    },
   ];
+
+  const [showAddPlaylistModal, setShowAddPlaylistModal] = useState(false);
+  const [tmpPlayList, setTmpPlayList] = useState({
+    name: null,
+    url: null,
+    channels: 0,
+  });
+
+  const addNewPlaylist = () => {
+    ipcRenderer
+      .invoke('add-new-playlist', tmpPlayList.url || '')
+      .then((data: string) => console.log(data))
+      .catch((e: Error) => console.log(e));
+  };
 
   return (
     <div className={styles.home}>
@@ -47,6 +66,7 @@ function Home() {
           className={styles.addToPlaylistBtn}
           size="large"
           appearance="primary"
+          onClick={() => setShowAddPlaylistModal(true)}
         />
       </div>
       <div className={styles.breakline}>
@@ -97,6 +117,49 @@ function Home() {
           </Table.Body>
         </Table>
       </div>
+      <Pane alignContent="center">
+        <Dialog
+          isShown={showAddPlaylistModal}
+          title="Add to playlist"
+          onCloseComplete={() => {
+            setShowAddPlaylistModal(false);
+            addNewPlaylist();
+          }}
+          onCancel={() => {
+            setTmpPlayList({
+              name: null,
+              url: null,
+              channels: 0,
+            });
+            setShowAddPlaylistModal(false);
+          }}
+          confirmLabel="Add"
+        >
+          <TextInputField
+            label="Title"
+            required
+            isInvalid={false}
+            onChange={(e: BaseSyntheticEvent) => {
+              setTmpPlayList({
+                ...tmpPlayList,
+                name: e.target.value,
+              });
+            }}
+          />
+          <TextInputField
+            label="URL"
+            hint="Eg. https://iptv.io/index.m3u"
+            required
+            isInvalid={false}
+            onChange={(e: BaseSyntheticEvent) => {
+              setTmpPlayList({
+                ...tmpPlayList,
+                url: e.target.value,
+              });
+            }}
+          />
+        </Dialog>
+      </Pane>
     </div>
   );
 }

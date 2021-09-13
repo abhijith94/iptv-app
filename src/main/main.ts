@@ -1,21 +1,12 @@
-/* eslint global-require: off, no-console: off */
-
-/**
- * This module executes inside of electron's main process. You can start
- * electron renderer process from here and communicate with the other processes
- * through IPC.
- *
- * When running `yarn build` or `yarn build:main`, this file is compiled to
- * `./src/main.js` using webpack. This gives us some performance wins.
- */
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain, nativeTheme } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
+import M3UParser from './m3uParser';
 
 export default class AppUpdater {
   constructor() {
@@ -26,12 +17,6 @@ export default class AppUpdater {
 }
 
 let mainWindow: BrowserWindow | null = null;
-
-ipcMain.on('ipc-example', async (event, arg) => {
-  const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
-  console.log(msgTemplate(arg));
-  event.reply('ipc-example', msgTemplate('pong'));
-});
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -100,7 +85,7 @@ const createWindow = async () => {
       mainWindow.focus();
       mainWindow.maximize();
     }
-    mainWindow.webContents.closeDevTools();
+    // mainWindow.webContents.closeDevTools();
   });
 
   mainWindow.on('closed', () => {
@@ -109,16 +94,6 @@ const createWindow = async () => {
 
   const menuBuilder = new MenuBuilder(mainWindow);
   menuBuilder.buildMenu();
-
-  // Open urls in the user's browser
-  // mainWindow.webContents.on('new-window', (event, url) => {
-  //   event.preventDefault();
-  //   shell.openExternal(url);
-  // });
-
-  // Remove this if your app does not use auto updates
-  // eslint-disable-next-line
-  //new AppUpdater();
 };
 
 /**
@@ -139,4 +114,14 @@ app.on('activate', () => {
   // On macOS it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (mainWindow === null) createWindow();
+});
+
+/**
+ * Other ipc event listeners and handlers
+ */
+ipcMain.handle('add-new-playlist', async (e, arg) => {
+  const m3uParser = new M3UParser(arg);
+  const playlist = await m3uParser.fetchPlaylist();
+  if (playlist !== null) m3uParser.savePlaylistToDisk(playlist);
+  return playlist;
 });
