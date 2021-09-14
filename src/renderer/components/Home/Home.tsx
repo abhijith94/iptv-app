@@ -1,4 +1,4 @@
-import React, { BaseSyntheticEvent, useState } from 'react';
+import React, { BaseSyntheticEvent, useEffect, useState } from 'react';
 import {
   PlusIcon,
   IconButton,
@@ -9,6 +9,7 @@ import {
   EditIcon,
   Dialog,
   TextInputField,
+  toaster,
 } from 'evergreen-ui';
 import styles from './Home.scss';
 import tvsvg from '../../../../assets/live_tv_white_24dp.svg';
@@ -23,36 +24,96 @@ declare global {
 function Home() {
   const { ipcRenderer } = window.electron; // eslint-disable-next-line
 
-  const date = `${new Date()
-    .toDateString()
-    .split(' ')
-    .slice(1, 3)
-    .join(' ')}, ${new Date().getFullYear()}`;
-
-  const playlist = [
+  const [playlist, setPlaylist] = useState<
     {
-      id: 1,
-      name: 'index.m3u',
-      url: '',
-      channels: 2247,
-      createdAt: date,
-      updatedAt: date,
-    },
-  ];
-
+      id: number;
+      title: string;
+      createdAt: Date;
+      updatedAt: Date;
+      count: number;
+    }[]
+  >([]);
   const [showAddPlaylistModal, setShowAddPlaylistModal] = useState(false);
   const [tmpPlayList, setTmpPlayList] = useState({
-    name: null,
+    title: null,
     url: null,
     channels: 0,
   });
+  const [invalidTitle, setInvalidTitle] = useState(false);
+  const [titleErrorMessage, setTitleErrorMessage] =
+    useState<string | null>(null);
+  const [invalidUrl, setInvalidUrl] = useState(false);
+  const [urlErrorMessage, setUrlErrorMessage] = useState<string | null>(null);
 
   const addNewPlaylist = () => {
     ipcRenderer
-      .invoke('add-new-playlist', tmpPlayList.url || '')
-      .then((data: string) => console.log(data))
+      .invoke('add-new-playlist', {
+        url: tmpPlayList.url,
+        title: tmpPlayList.title,
+      })
+      .then((data: string) => {
+        toaster.closeAll();
+        if (data === 'PLAYLIST_ALREADY_EXISTS') {
+          // show alert
+          toaster.danger('Playlist with same name already exists');
+        } else if (data === 'PLAYLIST_CREATED') {
+          setShowAddPlaylistModal(false);
+          setTmpPlayList({
+            title: null,
+            url: null,
+            channels: 0,
+          });
+          toaster.success('Playlist added');
+        } else if (data === 'PLAYLIST_PARSING_FAILED') {
+          toaster.warning('Failed to get playlist');
+        } else {
+          // something went wrong
+          toaster.danger('Something went wrong');
+        }
+        return null;
+      })
       .catch((e: Error) => console.log(e));
   };
+
+  const fetchAllPlaylists = () => {
+    ipcRenderer
+      .invoke('fetch-all-playlists')
+      .then(
+        (
+          data: {
+            id: number;
+            title: string;
+            createdAt: Date;
+            updatedAt: Date;
+            count: number;
+          }[]
+        ) => {
+          if (!data) {
+            setPlaylist([]);
+          } else {
+            setPlaylist(data);
+          }
+          return null;
+        }
+      )
+      .catch((e: Error) => console.log(e));
+  };
+
+  const deletePlaylist = (id: number) => {
+    ipcRenderer
+      .invoke('delete-playlist', id)
+      .then((result: string) => {
+        if (result === 'PLAYLIST_DELETED') {
+          fetchAllPlaylists();
+        }
+        return null;
+      })
+      .catch((error: Error) => console.log(error));
+  };
+
+  useEffect(() => {
+    fetchAllPlaylists();
+  }, []);
 
   return (
     <div className={styles.home}>
@@ -89,8 +150,8 @@ function Home() {
                 isSelectable
                 className={styles.tableCell}
               >
-                <Table.TextCell>{p.name}</Table.TextCell>
-                <Table.TextCell>{p.channels}</Table.TextCell>
+                <Table.TextCell>{p.title}</Table.TextCell>
+                <Table.TextCell>{p.count}</Table.TextCell>
                 <Table.TextCell>{p.createdAt}</Table.TextCell>
                 <Table.TextCell>{p.updatedAt}</Table.TextCell>
                 <Table.TextCell>
@@ -109,6 +170,9 @@ function Home() {
                       icon={TrashIcon}
                       intent="danger"
                       marginRight="13px"
+                      onClick={() => {
+                        deletePlaylist(p.id);
+                      }}
                     />
                   </Pane>
                 </Table.TextCell>
@@ -121,41 +185,65 @@ function Home() {
         <Dialog
           isShown={showAddPlaylistModal}
           title="Add to playlist"
-          onCloseComplete={() => {
-            setShowAddPlaylistModal(false);
+          onConfirm={() => {
             addNewPlaylist();
           }}
           onCancel={() => {
             setTmpPlayList({
-              name: null,
+              title: null,
               url: null,
               channels: 0,
             });
             setShowAddPlaylistModal(false);
           }}
           confirmLabel="Add"
+          isConfirmDisabled={
+            invalidTitle || invalidUrl || !tmpPlayList.title || !tmpPlayList.url
+          }
+          shouldCloseOnOverlayClick={false}
         >
           <TextInputField
             label="Title"
             required
-            isInvalid={false}
+            isInvalid={invalidTitle}
+            validationMessage={titleErrorMessage}
             onChange={(e: BaseSyntheticEvent) => {
-              setTmpPlayList({
-                ...tmpPlayList,
-                name: e.target.value,
-              });
+              const { value } = e.target;
+              if (value.trim() === '') {
+                setInvalidTitle(true);
+                setTitleErrorMessage('This field is required');
+              } else {
+                setTmpPlayList({
+                  ...tmpPlayList,
+                  title: e.target.value,
+                });
+                setInvalidTitle(false);
+                setTitleErrorMessage(null);
+              }
             }}
           />
           <TextInputField
             label="URL"
             hint="Eg. https://iptv.io/index.m3u"
             required
-            isInvalid={false}
+            isInvalid={invalidUrl}
+            validationMessage={urlErrorMessage}
             onChange={(e: BaseSyntheticEvent) => {
-              setTmpPlayList({
-                ...tmpPlayList,
-                url: e.target.value,
-              });
+              const { value } = e.target;
+              if (value.trim() === '') {
+                setInvalidUrl(true);
+                setUrlErrorMessage('This field is required');
+              } else if (!value.match(/^https?:\/\/.*\.m3u8?/g)) {
+                setInvalidUrl(true);
+                setUrlErrorMessage('Invalid format');
+              } else {
+                setTmpPlayList({
+                  ...tmpPlayList,
+                  url: e.target.value,
+                });
+                setInvalidUrl(false);
+                setUrlErrorMessage(null);
+              }
             }}
           />
         </Dialog>

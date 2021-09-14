@@ -17,7 +17,11 @@ contextBridge.exposeInMainWorld('electron', {
       }
     },
     invoke: async (channel, args) => {
-      const validChannels = ['fetch-playlist-info'];
+      const validChannels = [
+        'add-new-playlist',
+        'fetch-all-playlists',
+        'delete-playlist',
+      ];
       if (validChannels.includes(channel)) {
         // Deliberately strip event as it includes `sender`
         return ipcRenderer.invoke(channel, args);

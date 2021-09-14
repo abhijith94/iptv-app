@@ -249,6 +249,7 @@
     "axios": "^0.21.4",
     "electron-debug": "^3.2.0",
     "electron-log": "^4.3.5",
+    "electron-store": "^8.0.0",
     "electron-updater": "^4.3.8",
     "evergreen-ui": "^6.4.0",
     "history": "4.x.x",

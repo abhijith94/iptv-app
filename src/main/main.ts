@@ -1,7 +1,7 @@
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 import path from 'path';
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
@@ -119,9 +119,35 @@ app.on('activate', () => {
 /**
  * Other ipc event listeners and handlers
  */
-ipcMain.handle('add-new-playlist', async (e, arg) => {
-  const m3uParser = new M3UParser(arg);
+ipcMain.handle('add-new-playlist', async (_e, { url, title }) => {
+  const m3uParser = new M3UParser(url, title);
   const playlist = await m3uParser.fetchPlaylist();
-  if (playlist !== null) m3uParser.savePlaylistToDisk(playlist);
-  return playlist;
+
+  if (playlist !== null) {
+    return m3uParser.savePlaylistToDisk(playlist);
+  }
+  return 'PLAYLIST_PARSING_FAILED';
+});
+
+ipcMain.handle('fetch-all-playlists', () => {
+  return M3UParser.getAllPlaylists();
+});
+
+ipcMain.handle('delete-playlist', (_e, id: number) => {
+  if (mainWindow !== undefined && mainWindow !== null) {
+    dialog
+      .showMessageBox(mainWindow, {
+        title: 'Delete',
+        buttons: ['Yes', 'Cancel'],
+        message: 'Do you really want to delete?',
+      })
+      .then((value) => {
+        if (value.response === 0) {
+          M3UParser.deletePlaylist(id);
+          return 'PLAYLIST_DELETED';
+        }
+        return null;
+      })
+      .catch((error: Error) => console.log(error));
+  }
 });
