@@ -134,4 +134,19 @@ export default class M3UParser {
       return null;
     }
   }
+
+  static async fetchChannels(id: number) {
+    try {
+      const store = new Store();
+      let data = store.get('allPlaylist');
+      if (data) {
+        data = data.filter((d) => d.id == id);
+        return data[0].channels;
+      }
+      return null;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
 }

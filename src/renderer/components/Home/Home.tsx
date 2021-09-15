@@ -11,6 +11,7 @@ import {
   TextInputField,
   toaster,
 } from 'evergreen-ui';
+import { useHistory } from 'react-router';
 import styles from './Home.scss';
 import tvsvg from '../../../../assets/live_tv_white_24dp.svg';
 
@@ -23,6 +24,7 @@ declare global {
 
 function Home() {
   const { ipcRenderer } = window.electron; // eslint-disable-next-line
+  const history = useHistory();
 
   const [playlist, setPlaylist] = useState<
     {
@@ -127,6 +129,10 @@ function Home() {
       .catch((error: Error) => console.log(error));
   };
 
+  const openPlayerWindow = (id: number) => {
+    history.push(`/${id}`);
+  };
+
   useEffect(() => {
     fetchAllPlaylists();
   }, []);
@@ -166,10 +172,18 @@ function Home() {
                 isSelectable
                 className={styles.tableCell}
               >
-                <Table.TextCell>{p.title}</Table.TextCell>
-                <Table.TextCell>{p.count}</Table.TextCell>
-                <Table.TextCell>{p.createdAt}</Table.TextCell>
-                <Table.TextCell>{p.updatedAt}</Table.TextCell>
+                <Table.TextCell onClick={() => openPlayerWindow(p.id)}>
+                  {p.title}
+                </Table.TextCell>
+                <Table.TextCell onClick={() => openPlayerWindow(p.id)}>
+                  {p.count}
+                </Table.TextCell>
+                <Table.TextCell onClick={() => openPlayerWindow(p.id)}>
+                  {p.createdAt}
+                </Table.TextCell>
+                <Table.TextCell onClick={() => openPlayerWindow(p.id)}>
+                  {p.updatedAt}
+                </Table.TextCell>
                 <Table.TextCell>
                   <Pane display="flex" alignItems="center">
                     <IconButton

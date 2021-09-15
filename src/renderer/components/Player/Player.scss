@@ -1,0 +1,50 @@
+.playerContainer {
+  display: flex;
+  justify-content: flex-start;
+  height: 100vh;
+  width: 100%;
+
+  .sidebar {
+    width: 400px;
+    background-color: white;
+    height: 100%;
+
+    .tabContainer {
+      background-color: white;
+      text-align: center;
+      margin-top: 20px;
+      padding: 10px 0;
+    }
+
+    .searchContainer {
+      display: flex;
+      justify-content: center;
+      margin: 15px 0;
+    }
+
+    .channelContainer {
+      overflow-y: auto;
+      height: 100vh;
+
+      .channel {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid gainsboro;
+        font-size: 1.7rem;
+        color: #585858;
+        padding: 3px 12px;
+        height: 51px;
+
+        &:hover {
+          cursor: pointer;
+          background-color: gainsboro;
+        }
+
+        .logo {
+          width: 50px;
+        }
+      }
+    }
+  }
+}

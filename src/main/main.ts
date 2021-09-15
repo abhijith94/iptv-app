@@ -146,8 +146,14 @@ ipcMain.handle('delete-playlist', async (_e, id: number) => {
     }
     return null;
   }
+  return null;
 });
 
 ipcMain.handle('update-playlist', async (_e, id: number) => {
   return M3UParser.updatePlaylist(id);
+});
+
+ipcMain.handle('fetch-channels', async (_e, pid) => {
+  const data = M3UParser.fetchChannels(pid);
+  return data;
 });
