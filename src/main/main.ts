@@ -133,21 +133,21 @@ ipcMain.handle('fetch-all-playlists', () => {
   return M3UParser.getAllPlaylists();
 });
 
-ipcMain.handle('delete-playlist', (_e, id: number) => {
+ipcMain.handle('delete-playlist', async (_e, id: number) => {
   if (mainWindow !== undefined && mainWindow !== null) {
-    dialog
-      .showMessageBox(mainWindow, {
-        title: 'Delete',
-        buttons: ['Yes', 'Cancel'],
-        message: 'Do you really want to delete?',
-      })
-      .then((value) => {
-        if (value.response === 0) {
-          M3UParser.deletePlaylist(id);
-          return 'PLAYLIST_DELETED';
-        }
-        return null;
-      })
-      .catch((error: Error) => console.log(error));
+    const value = await dialog.showMessageBox(mainWindow, {
+      title: 'Delete',
+      buttons: ['Yes', 'Cancel'],
+      message: 'Do you really want to delete?',
+    });
+    if (value.response === 0) {
+      M3UParser.deletePlaylist(id);
+      return 'PLAYLIST_DELETED';
+    }
+    return null;
   }
+});
+
+ipcMain.handle('update-playlist', async (_e, id: number) => {
+  return M3UParser.updatePlaylist(id);
 });

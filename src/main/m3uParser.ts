@@ -30,7 +30,7 @@ export default class M3UParser {
 
   savePlaylistToDisk(playlist: Playlist) {
     const store = new Store();
-    const fPlaylist = this.formatPlaylistForUngroupedType(playlist);
+    const fPlaylist = this.formatPlaylist(playlist);
     const allPlaylist: [{ title: string }] = store.get('allPlaylist');
 
     if (allPlaylist) {
@@ -46,7 +46,7 @@ export default class M3UParser {
     return 'PLAYLIST_CREATED';
   }
 
-  formatPlaylistForUngroupedType(playlist: Playlist) {
+  formatPlaylist(playlist: Playlist) {
     const date = new Date();
     const data = {
       count: playlist.items.length,
@@ -94,6 +94,44 @@ export default class M3UParser {
     if (data) {
       data = data.filter((d: { id: number }) => d.id !== id);
       store.set('allPlaylist', data);
+    }
+  }
+
+  static async updatePlaylist(id: number) {
+    try {
+      const store = new Store();
+      const data = store.get('allPlaylist');
+      if (data) {
+        const dataToModify = data.find((obj) => obj.id === id);
+        const otherData = data.filter((obj) => obj.id !== id);
+        let newData = await axios.get(dataToModify.url);
+        if (newData) {
+          newData = parse(newData.data);
+          const channels = newData.items.map((p) => {
+            return {
+              name: p.name,
+              url: p.url,
+              tvg: p.tvg,
+              group: p.group,
+            };
+          });
+
+          otherData.push({
+            ...dataToModify,
+            updatedAt: new Date(),
+            count: channels.length,
+            channels,
+          });
+
+          store.set('allPlaylist', otherData);
+
+          return 'PLAYLIST_UPDATED';
+        }
+      }
+      return null;
+    } catch (error) {
+      console.log(error);
+      return null;
     }
   }
 }

@@ -45,36 +45,6 @@ function Home() {
   const [invalidUrl, setInvalidUrl] = useState(false);
   const [urlErrorMessage, setUrlErrorMessage] = useState<string | null>(null);
 
-  const addNewPlaylist = () => {
-    ipcRenderer
-      .invoke('add-new-playlist', {
-        url: tmpPlayList.url,
-        title: tmpPlayList.title,
-      })
-      .then((data: string) => {
-        toaster.closeAll();
-        if (data === 'PLAYLIST_ALREADY_EXISTS') {
-          // show alert
-          toaster.danger('Playlist with same name already exists');
-        } else if (data === 'PLAYLIST_CREATED') {
-          setShowAddPlaylistModal(false);
-          setTmpPlayList({
-            title: null,
-            url: null,
-            channels: 0,
-          });
-          toaster.success('Playlist added');
-        } else if (data === 'PLAYLIST_PARSING_FAILED') {
-          toaster.warning('Failed to get playlist');
-        } else {
-          // something went wrong
-          toaster.danger('Something went wrong');
-        }
-        return null;
-      })
-      .catch((e: Error) => console.log(e));
-  };
-
   const fetchAllPlaylists = () => {
     ipcRenderer
       .invoke('fetch-all-playlists')
@@ -99,6 +69,37 @@ function Home() {
       .catch((e: Error) => console.log(e));
   };
 
+  const addNewPlaylist = () => {
+    ipcRenderer
+      .invoke('add-new-playlist', {
+        url: tmpPlayList.url,
+        title: tmpPlayList.title,
+      })
+      .then((data: string) => {
+        toaster.closeAll();
+        if (data === 'PLAYLIST_ALREADY_EXISTS') {
+          // show alert
+          toaster.danger('Playlist with same name already exists');
+        } else if (data === 'PLAYLIST_CREATED') {
+          setShowAddPlaylistModal(false);
+          setTmpPlayList({
+            title: null,
+            url: null,
+            channels: 0,
+          });
+          toaster.success('Playlist added');
+          fetchAllPlaylists();
+        } else if (data === 'PLAYLIST_PARSING_FAILED') {
+          toaster.warning('Failed to get playlist');
+        } else {
+          // something went wrong
+          toaster.danger('Something went wrong');
+        }
+        return null;
+      })
+      .catch((e: Error) => console.log(e));
+  };
+
   const deletePlaylist = (id: number) => {
     ipcRenderer
       .invoke('delete-playlist', id)
@@ -106,6 +107,21 @@ function Home() {
         if (result === 'PLAYLIST_DELETED') {
           fetchAllPlaylists();
         }
+        return null;
+      })
+      .catch((error: Error) => console.log(error));
+  };
+
+  const updatePlaylist = (id: number) => {
+    ipcRenderer
+      .invoke('update-playlist', id)
+      .then((result: string) => {
+        if (result === 'PLAYLIST_UPDATED') {
+          fetchAllPlaylists();
+          toaster.success('Playlist updated');
+          return null;
+        }
+        toaster.warning('Could not update the playlist');
         return null;
       })
       .catch((error: Error) => console.log(error));
@@ -160,6 +176,9 @@ function Home() {
                       icon={RefreshIcon}
                       intent="success"
                       marginRight="13px"
+                      onClick={() => {
+                        updatePlaylist(p.id);
+                      }}
                     />
                     <IconButton
                       icon={EditIcon}
