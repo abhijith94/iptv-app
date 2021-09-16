@@ -1,7 +1,7 @@
 .playerContainer {
   display: flex;
   justify-content: flex-start;
-  height: 100vh;
+  height: 100%;
   width: 100%;
 
   .sidebar {
@@ -24,7 +24,7 @@
 
     .channelContainer {
       overflow-y: auto;
-      height: 100vh;
+      height: calc(100vh - 140px);
 
       .channel {
         display: flex;
@@ -33,16 +33,20 @@
         border-bottom: 1px solid gainsboro;
         font-size: 1.7rem;
         color: #585858;
-        padding: 3px 12px;
-        height: 51px;
+        //height: 51px !important;
 
         &:hover {
           cursor: pointer;
           background-color: gainsboro;
         }
 
+        .channelName {
+          margin-left: 10px;
+        }
+
         .logo {
-          width: 50px;
+          width: 45px;
+          margin-right: 10px;
         }
       }
     }

@@ -54,3 +54,7 @@ h1,
 hr {
   margin: 0;
 }
+
+#root {
+  height: 100%;
+}

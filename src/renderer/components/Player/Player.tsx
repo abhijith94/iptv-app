@@ -1,6 +1,7 @@
 import { ArrowLeftIcon, Pane, SearchInput, Tab, Tablist } from 'evergreen-ui';
 import React, { useEffect, useState } from 'react';
-import InfiniteScroll from 'react-infinite-scroll-component';
+import { FixedSizeList as List } from 'react-window';
+import AutoSizer from 'react-virtualized-auto-sizer';
 import { Link } from 'react-router-dom';
 import styles from './Player.scss';
 
@@ -18,6 +19,17 @@ function Player(props) {
   const [selectedTab, setSelectedTab] = useState(0);
   const [channels, setChannels] = useState([]);
   const [playlistId, setPlaylistId] = useState(null);
+
+  const Row = ({ index, style }) => {
+    return (
+      <div key={index} style={style} className={styles.channel}>
+        <div className={styles.channelName}>{`${index + 1}. ${
+          channels[index].name
+        }`}</div>
+        <img src={channels[index].tvg.logo} alt="" className={styles.logo} />
+      </div>
+    );
+  };
 
   useEffect(() => {
     // eslint-disable-next-line react/prop-types
@@ -70,6 +82,7 @@ function Player(props) {
           id={`panel-${tabs[0]}`}
           role="tabpanel"
           display={selectedTab === 0 ? 'block' : 'none'}
+          height="100%"
         >
           <div className={styles.searchContainer}>
             <SearchInput
@@ -78,14 +91,18 @@ function Player(props) {
             />
           </div>
           <div className={styles.channelContainer}>
-            {channels.map((c: any, i) => {
-              return (
-                <div key={i} className={styles.channel}>
-                  <div>{`${i + 1}. ${c.name}`}</div>
-                  <img src={c.tvg.logo} alt="" className={styles.logo} />
-                </div>
-              );
-            })}
+            <AutoSizer>
+              {({ height, width }) => (
+                <List
+                  height={height}
+                  itemCount={channels.length}
+                  itemSize={50}
+                  width={width}
+                >
+                  {Row}
+                </List>
+              )}
+            </AutoSizer>
           </div>
         </Pane>
       </div>
