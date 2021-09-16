@@ -8,6 +8,8 @@ import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 import M3UParser from './m3uParser';
 
+app.commandLine.appendSwitch('disable-features', 'OutOfBlinkCors');
+
 export default class AppUpdater {
   constructor() {
     log.transports.file.level = 'info';
@@ -63,6 +65,8 @@ const createWindow = async () => {
     show: false,
     width: 1024,
     height: 728,
+    minWidth: 1000,
+    minHeight: 650,
     icon: getAssetPath('icon.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -155,5 +159,10 @@ ipcMain.handle('update-playlist', async (_e, id: number) => {
 
 ipcMain.handle('fetch-channels', async (_e, pid) => {
   const data = M3UParser.fetchChannels(pid);
+  return data;
+});
+
+ipcMain.handle('search-channels', async (_e, { pid, channelName }) => {
+  const data = M3UParser.searchChannels(pid, channelName);
   return data;
 });

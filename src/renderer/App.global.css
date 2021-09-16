@@ -2,6 +2,8 @@
  * @NOTE: Prepend a `~` to css file paths that are in your node_modules
  *        See https://github.com/webpack-contrib/sass-loader#imports
  */
+@import url('video.js/dist/video-js.css');
+
 @font-face {
   font-family: 'Roboto';
   font-weight: 300;
@@ -57,4 +59,8 @@ hr {
 
 #root {
   height: 100%;
+}
+
+.vjs-big-play-button {
+  display: none !important;
 }

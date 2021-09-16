@@ -1,8 +1,11 @@
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable react/prop-types */
 import { ArrowLeftIcon, Pane, SearchInput, Tab, Tablist } from 'evergreen-ui';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FixedSizeList as List } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { Link } from 'react-router-dom';
+import VideoJs from '../VideoJs/VideoJs';
 import styles from './Player.scss';
 
 declare global {
@@ -19,10 +22,38 @@ function Player(props) {
   const [selectedTab, setSelectedTab] = useState(0);
   const [channels, setChannels] = useState([]);
   const [playlistId, setPlaylistId] = useState(null);
+  const [options, setOptions] = useState({
+    autoplay: true,
+    controls: true,
+    responsive: true,
+    fluid: false,
+    sources: [],
+  });
+  const playerRef = React.useRef(null);
 
   const Row = ({ index, style }) => {
     return (
-      <div key={index} style={style} className={styles.channel}>
+      // eslint-disable-next-line jsx-a11y/no-static-element-interactions
+      <div
+        key={index}
+        style={style}
+        className={styles.channel}
+        onClick={() => {
+          setOptions({
+            autoplay: true,
+            controls: true,
+            responsive: true,
+            fluid: false,
+            liveui: true,
+            sources: [
+              {
+                src: channels[index].url,
+                type: 'application/x-mpegURL',
+              },
+            ],
+          });
+        }}
+      >
         <div className={styles.channelName}>{`${index + 1}. ${
           channels[index].name
         }`}</div>
@@ -31,10 +62,19 @@ function Player(props) {
     );
   };
 
-  useEffect(() => {
-    // eslint-disable-next-line react/prop-types
-    const pid = props.match.params.id;
-    setPlaylistId(pid);
+  const handlePlayerReady = (player) => {
+    playerRef.current = player;
+    // you can handle player events here
+    player.on('waiting', () => {
+      console.log('player is waiting');
+    });
+
+    player.on('dispose', () => {
+      console.log('player will dispose');
+    });
+  };
+
+  const fetchAllChannels = (pid) => {
     ipcRenderer
       .invoke('fetch-channels', pid)
       .then((c) => {
@@ -44,6 +84,29 @@ function Player(props) {
         return null;
       })
       .catch((error: Error) => console.log(error));
+  };
+
+  const searchChannel = (channelName: string) => {
+    if (channelName && channelName.trim() !== '' && channelName.length >= 3) {
+      ipcRenderer
+        .invoke('search-channels', { channelName, pid: playlistId })
+        .then((c: any) => {
+          if (c) {
+            setChannels(c);
+          }
+          return null;
+        })
+        .catch((e: Error) => console.log(e));
+    } else {
+      fetchAllChannels(playlistId);
+    }
+  };
+
+  useEffect(() => {
+    // eslint-disable-next-line react/prop-types
+    const pid = props.match.params.id;
+    setPlaylistId(pid);
+    fetchAllChannels(pid);
   }, []);
 
   return (
@@ -88,6 +151,10 @@ function Player(props) {
             <SearchInput
               style={{ backgroundColor: '#f1f1f1' }}
               placeholder="Search for channel..."
+              onChange={(e: any) => {
+                const toSearch = e.target.value;
+                searchChannel(toSearch);
+              }}
             />
           </div>
           <div className={styles.channelContainer}>
@@ -106,7 +173,9 @@ function Player(props) {
           </div>
         </Pane>
       </div>
-      <div></div>
+      <div className={styles.player}>
+        <VideoJs options={options} onReady={handlePlayerReady} />
+      </div>
     </div>
   );
 }

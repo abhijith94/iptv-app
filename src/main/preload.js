@@ -23,6 +23,7 @@ contextBridge.exposeInMainWorld('electron', {
         'delete-playlist',
         'update-playlist',
         'fetch-channels',
+        'search-channels',
       ];
       if (validChannels.includes(channel)) {
         // Deliberately strip event as it includes `sender`
