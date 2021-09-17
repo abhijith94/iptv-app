@@ -35,8 +35,8 @@ function VideoJs(props) {
   }, []);
 
   return (
-    <div data-vjs-player style={{ height: '100%' }}>
-      <video ref={videoRef} className="video-js vjs-16-9" />
+    <div data-vjs-player style={{ height: '100%', width: '100%' }}>
+      <video ref={videoRef} className="video-js" />
     </div>
   );
 }

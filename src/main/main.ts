@@ -71,7 +71,6 @@ const createWindow = async () => {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
     },
-    titleBarStyle: 'hidden',
   });
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));

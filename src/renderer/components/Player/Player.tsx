@@ -1,6 +1,14 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable react/prop-types */
-import { ArrowLeftIcon, Pane, SearchInput, Tab, Tablist } from 'evergreen-ui';
+import {
+  ArrowLeftIcon,
+  DrawerLeftFilledIcon,
+  DrawerRightFilledIcon,
+  Pane,
+  SearchInput,
+  Tab,
+  Tablist,
+} from 'evergreen-ui';
 import React, { useEffect, useRef, useState } from 'react';
 import { FixedSizeList as List } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
@@ -22,6 +30,8 @@ function Player(props) {
   const [selectedTab, setSelectedTab] = useState(0);
   const [channels, setChannels] = useState([]);
   const [playlistId, setPlaylistId] = useState(null);
+  const [currentChannelName, setCurrentChannelName] = useState('');
+  const [showSidebar, setShowSidebar] = useState(true);
   const [options, setOptions] = useState({
     autoplay: true,
     controls: true,
@@ -43,7 +53,7 @@ function Player(props) {
             autoplay: true,
             controls: true,
             responsive: true,
-            fluid: false,
+            fluid: true,
             liveui: true,
             sources: [
               {
@@ -52,6 +62,7 @@ function Player(props) {
               },
             ],
           });
+          setCurrentChannelName(channels[index].name);
         }}
       >
         <div className={styles.channelName}>{`${index + 1}. ${
@@ -111,13 +122,17 @@ function Player(props) {
 
   return (
     <div className={styles.playerContainer}>
-      <div className={styles.sidebar}>
+      <div
+        className={styles.sidebar}
+        id={!showSidebar ? styles.hideSidebar : ''}
+      >
         <div
           style={{
             display: 'flex',
             justifyContent: 'flex-start',
             alignItems: 'baseline',
             paddingLeft: '20px',
+            width: '350px',
           }}
         >
           <Link to="/" style={{ marginRight: '20px', color: 'gray' }}>
@@ -173,7 +188,32 @@ function Player(props) {
           </div>
         </Pane>
       </div>
-      <div className={styles.player}>
+      <div
+        className={styles.player}
+        id={!showSidebar ? styles.widenPlayer : ''}
+      >
+        <div className={styles.drawerToggle}>
+          {showSidebar ? (
+            <DrawerRightFilledIcon
+              size={25}
+              color="gainsboro"
+              title="Close sidebar"
+              onClick={() => {
+                setShowSidebar(false);
+              }}
+            />
+          ) : (
+            <DrawerLeftFilledIcon
+              size={25}
+              color="gainsboro"
+              title="Open sidebar"
+              onClick={() => {
+                setShowSidebar(true);
+              }}
+            />
+          )}
+          <p className={styles.channelName}>{currentChannelName}</p>
+        </div>
         <VideoJs options={options} onReady={handlePlayerReady} />
       </div>
     </div>

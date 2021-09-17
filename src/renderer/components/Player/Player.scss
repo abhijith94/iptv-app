@@ -5,9 +5,11 @@
   width: 100%;
 
   .sidebar {
-    width: 400px;
+    width: fit-content;
     background-color: white;
     height: 100%;
+    position: relative;
+    transition: all 0.3s ease-out;
 
     .tabContainer {
       background-color: white;
@@ -54,6 +56,37 @@
 
   .player {
     height: 100%;
-    width: calc(100% - 400px);
+    width: 100%;
+    transition: all 0.3s ease-out;
+    display: flex;
+    flex-direction: column;
+
+    .drawerToggle {
+      background-color: black;
+      padding: 10px 20px;
+
+      svg {
+        &:hover {
+          cursor: pointer;
+        }
+      }
+
+      .channelName {
+        display: inline-block;
+        font-size: 2.5rem;
+        margin: 0;
+        margin: 0 20px;
+        color: rgb(163, 163, 163);
+        vertical-align: super;
+      }
+    }
   }
+}
+
+#hideSidebar {
+  transform: translateX(-100%);
+}
+
+#widenPlayer {
+  margin-left: -370px;
 }
