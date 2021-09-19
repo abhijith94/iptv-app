@@ -161,7 +161,20 @@ ipcMain.handle('fetch-channels', async (_e, pid) => {
   return data;
 });
 
+ipcMain.handle('fetch-favourite-channels', async (_e, pid) => {
+  const data = M3UParser.fetchFavouriteChannels(pid);
+  return data;
+});
+
 ipcMain.handle('search-channels', async (_e, { pid, channelName }) => {
   const data = M3UParser.searchChannels(pid, channelName);
   return data;
 });
+
+ipcMain.handle(
+  'set-channel-favourite-prop',
+  async (_e, { pid, channelId, isFavourite }) => {
+    M3UParser.setChannelFavouriteProp(pid, channelId, isFavourite);
+    return true;
+  }
+);

@@ -35,7 +35,7 @@ export default class M3UParser {
 
     if (allPlaylist) {
       // check if playlist with title already exists or not
-      if (allPlaylist.map((p) => p.title).indexOf(this.title) !== -1) {
+      if (allPlaylist.map((p) => p.title).indexOf(this.title) != -1) {
         // playlist exists
         return 'PLAYLIST_ALREADY_EXISTS';
       }
@@ -92,7 +92,7 @@ export default class M3UParser {
     const store = new Store();
     let data = store.get('allPlaylist');
     if (data) {
-      data = data.filter((d: { id: number }) => d.id !== id);
+      data = data.filter((d: { id: number }) => d.id != id);
       store.set('allPlaylist', data);
     }
   }
@@ -102,8 +102,8 @@ export default class M3UParser {
       const store = new Store();
       const data = store.get('allPlaylist');
       if (data) {
-        const dataToModify = data.find((obj) => obj.id === id);
-        const otherData = data.filter((obj) => obj.id !== id);
+        const dataToModify = data.find((obj) => obj.id == id);
+        const otherData = data.filter((obj) => obj.id != id);
         let newData = await axios.get(dataToModify.url);
         if (newData) {
           newData = parse(newData.data);
@@ -150,6 +150,22 @@ export default class M3UParser {
     }
   }
 
+  static async fetchFavouriteChannels(id: number) {
+    try {
+      const store = new Store();
+      let data = store.get('allPlaylist');
+      if (data) {
+        data = data.filter((d) => d.id == id);
+        data[0].channels = data[0].channels.filter((c) => c.favourite == true);
+        return data[0].channels;
+      }
+      return null;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
   static async searchChannels(id: number, channelName: string) {
     try {
       const store = new Store();
@@ -167,6 +183,36 @@ export default class M3UParser {
     } catch (error) {
       console.log(error);
       return null;
+    }
+  }
+
+  static async setChannelFavouriteProp(
+    pid: number,
+    channelId: string,
+    favourite: boolean
+  ) {
+    try {
+      const store = new Store();
+      const data = store.get('allPlaylist');
+      if (data) {
+        const dataToModify = data.find((obj) => obj.id == pid);
+        const otherData = data.filter((obj) => obj.id != pid);
+
+        dataToModify.channels = dataToModify.channels.map((p) => {
+          if (p.tvg.id == channelId) {
+            p.favourite = favourite;
+          }
+          return p;
+        });
+
+        otherData.push({
+          ...dataToModify,
+        });
+
+        store.set('allPlaylist', otherData);
+      }
+    } catch (error) {
+      console.log(error);
     }
   }
 }
