@@ -40,12 +40,15 @@ function Home() {
     title: null,
     url: null,
     channels: 0,
+    pid: null,
   });
   const [invalidTitle, setInvalidTitle] = useState(false);
   const [titleErrorMessage, setTitleErrorMessage] =
     useState<string | null>(null);
   const [invalidUrl, setInvalidUrl] = useState(false);
   const [urlErrorMessage, setUrlErrorMessage] = useState<string | null>(null);
+
+  const [showEditPlaylistModal, setShowEditPlaylistModal] = useState(false);
 
   const fetchAllPlaylists = () => {
     ipcRenderer
@@ -133,6 +136,39 @@ function Home() {
     history.push(`/${id}`);
   };
 
+  const savePlaylistEdit = () => {
+    ipcRenderer
+      .invoke('save-playlist-edit', {
+        url: tmpPlayList.url,
+        title: tmpPlayList.title,
+        pid: tmpPlayList.pid,
+      })
+      .then((data: string) => {
+        toaster.closeAll();
+        if (data === 'PLAYLIST_ALREADY_EXISTS') {
+          // show alert
+          toaster.danger('Playlist with same name already exists');
+        } else if (data === 'PLAYLIST_UPDATED') {
+          toaster.success('Playlist modified');
+          setShowEditPlaylistModal(false);
+          fetchAllPlaylists();
+          setTmpPlayList({
+            title: null,
+            url: null,
+            channels: 0,
+            pid: null,
+          });
+        } else if (data === 'PLAYLIST_PARSING_FAILED') {
+          toaster.warning('Failed to get playlist');
+        } else {
+          // something went wrong
+          toaster.danger('Something went wrong');
+        }
+        return null;
+      })
+      .catch((e: Error) => console.log(e));
+  };
+
   useEffect(() => {
     fetchAllPlaylists();
   }, []);
@@ -198,6 +234,14 @@ function Home() {
                       icon={EditIcon}
                       intent="warning"
                       marginRight="13px"
+                      onClick={() => {
+                        setTmpPlayList({
+                          title: p.title,
+                          url: p.url,
+                          pid: p.id,
+                        });
+                        setShowEditPlaylistModal(true);
+                      }}
                     />
                     <IconButton
                       icon={TrashIcon}
@@ -228,6 +272,10 @@ function Home() {
               channels: 0,
             });
             setShowAddPlaylistModal(false);
+            setInvalidTitle(false);
+            setTitleErrorMessage(null);
+            setInvalidUrl(false);
+            setUrlErrorMessage(null);
           }}
           confirmLabel="Add"
           isConfirmDisabled={
@@ -277,6 +325,78 @@ function Home() {
                 setInvalidUrl(false);
                 setUrlErrorMessage(null);
               }
+            }}
+          />
+        </Dialog>
+      </Pane>
+      <Pane alignContent="center">
+        <Dialog
+          isShown={showEditPlaylistModal}
+          title="Edit playlist"
+          onConfirm={() => {
+            savePlaylistEdit();
+          }}
+          onCancel={() => {
+            setTmpPlayList({
+              title: null,
+              url: null,
+            });
+            setShowEditPlaylistModal(false);
+            setInvalidTitle(false);
+            setTitleErrorMessage(null);
+            setInvalidUrl(false);
+            setUrlErrorMessage(null);
+          }}
+          confirmLabel="Save"
+          isConfirmDisabled={
+            invalidTitle || invalidUrl || !tmpPlayList.title || !tmpPlayList.url
+          }
+          shouldCloseOnOverlayClick={false}
+        >
+          <TextInputField
+            label="Title"
+            required
+            isInvalid={invalidTitle}
+            value={tmpPlayList.title || ''}
+            validationMessage={titleErrorMessage}
+            onChange={(e: BaseSyntheticEvent) => {
+              const { value } = e.target;
+              if (value.trim() === '') {
+                setInvalidTitle(true);
+                setTitleErrorMessage('This field is required');
+              } else {
+                setInvalidTitle(false);
+                setTitleErrorMessage(null);
+              }
+              setTmpPlayList({
+                ...tmpPlayList,
+                title: e.target.value,
+              });
+            }}
+          />
+          <TextInputField
+            label="URL"
+            hint="Eg. https://iptv.io/index.m3u"
+            required
+            isInvalid={invalidUrl}
+            validationMessage={urlErrorMessage}
+            value={tmpPlayList.url || ''}
+            onChange={(e: BaseSyntheticEvent) => {
+              const { value } = e.target;
+              if (value.trim() === '') {
+                setInvalidUrl(true);
+                setUrlErrorMessage('This field is required');
+              } else if (!value.match(/^https?:\/\/.*\.m3u8?/g)) {
+                setInvalidUrl(true);
+                setUrlErrorMessage('Invalid format');
+              } else {
+                setInvalidUrl(false);
+                setUrlErrorMessage(null);
+              }
+              setTmpPlayList({
+                ...tmpPlayList,
+                url: e.target.value,
+              });
             }}
           />
         </Dialog>

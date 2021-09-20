@@ -63,3 +63,11 @@ hr {
 :global(.vjs-big-play-button) {
   display: none !important;
 }
+
+#root {
+  height: 100%;
+}
+
+.vjs-big-play-button {
+  display: none !important;
+}

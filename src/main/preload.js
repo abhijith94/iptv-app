@@ -26,6 +26,7 @@ contextBridge.exposeInMainWorld('electron', {
         'fetch-favourite-channels',
         'search-channels',
         'set-channel-favourite-prop',
+        'save-playlist-edit',
       ];
       if (validChannels.includes(channel)) {
         // Deliberately strip event as it includes `sender`

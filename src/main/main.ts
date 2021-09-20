@@ -10,6 +10,8 @@ import M3UParser from './m3uParser';
 
 app.commandLine.appendSwitch('disable-features', 'OutOfBlinkCors');
 
+const gotTheLock = app.requestSingleInstanceLock();
+
 export default class AppUpdater {
   constructor() {
     log.transports.file.level = 'info';
@@ -112,7 +114,20 @@ app.on('window-all-closed', () => {
   }
 });
 
-app.whenReady().then(createWindow).catch(console.log);
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', (e, c, wd) => {
+    // Someone tried to run a second instance, we should focus our window.
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
+  });
+
+  // Create myWindow, load the rest of the app, etc...
+  app.whenReady().then(createWindow).catch(console.log);
+}
 
 app.on('activate', () => {
   // On macOS it's common to re-create a window in the app when the
@@ -179,3 +194,7 @@ ipcMain.handle(
     return true;
   }
 );
+
+ipcMain.handle('save-playlist-edit', async (_e, { url, title, pid }) => {
+  return M3UParser.editPlaylist(pid, title, url);
+});

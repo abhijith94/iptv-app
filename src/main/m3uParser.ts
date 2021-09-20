@@ -215,4 +215,52 @@ export default class M3UParser {
       console.log(error);
     }
   }
+
+  static async editPlaylist(pid, title, url) {
+    console.log(pid, title, url);
+
+    try {
+      const store = new Store();
+      const data = store.get('allPlaylist');
+      if (data) {
+        // check if another playlit with same name exists or not
+        for (let i = 0; i < data.length; i++) {
+          if (data[i].title == title && data[i].id != pid) {
+            return 'PLAYLIST_ALREADY_EXISTS';
+          }
+        }
+
+        const dataToModify = data.find((obj) => obj.id == pid);
+        const otherData = data.filter((obj) => obj.id != pid);
+        let newData = await axios.get(url);
+        if (newData) {
+          newData = parse(newData.data);
+          const channels = newData.items.map((p) => {
+            return {
+              name: p.name,
+              url: p.url,
+              tvg: p.tvg,
+              group: p.group,
+            };
+          });
+
+          otherData.push({
+            ...dataToModify,
+            updatedAt: new Date(),
+            count: channels.length,
+            channels,
+            title,
+          });
+
+          store.set('allPlaylist', otherData);
+
+          return 'PLAYLIST_UPDATED';
+        }
+      }
+      return null;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
 }
