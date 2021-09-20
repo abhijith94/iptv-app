@@ -60,7 +60,12 @@ export default merge(baseConfig, {
               publicPath: './',
             },
           },
-          'css-loader',
+          {
+            loader: 'css-loader',
+            options: {
+              modules: true,
+            },
+          },
           'sass-loader',
         ],
       },

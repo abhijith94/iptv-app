@@ -16,7 +16,7 @@ contextBridge.exposeInMainWorld('electron', {
         ipcRenderer.once(channel, (event, ...args) => func(...args));
       }
     },
-    invoke: async (channel, args) => {
+    invoke(channel, args) {
       const validChannels = [
         'add-new-playlist',
         'fetch-all-playlists',

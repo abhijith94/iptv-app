@@ -30,7 +30,7 @@
     ]
   },
   "build": {
-    "productName": "ElectronReact",
+    "productName": "SimpleIPTVPlayer",
     "appId": "org.erb.ElectronReact",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
@@ -63,8 +63,12 @@
     },
     "win": {
       "target": [
-        "nsis"
+        "appx"
       ]
+    },
+    "appx": {
+      "displayName": "Simple IPTV Player",
+      "publisher": "CN=abhijith94"
     },
     "linux": {
       "target": [
@@ -91,9 +95,9 @@
     "url": "git+https://github.com/electron-react-boilerplate/electron-react-boilerplate.git"
   },
   "author": {
-    "name": "Electron React Boilerplate Maintainers",
-    "email": "electronreactboilerplate@gmail.com",
-    "url": "https://electron-react-boilerplate.js.org"
+    "name": "abhijith94",
+    "email": "abhijitht007@live.com",
+    "url": "https://www.microsoft.com/store/apps/9PHKKHBF5S4D"
   },
   "contributors": [
     {
