@@ -68,7 +68,7 @@
     },
     "appx": {
       "displayName": "Simple IPTV Player",
-      "publisher": "CN=A0367F06-1C50-44D0-8219-DD610DCCD404"
+      "publisher": "CN=abhijith94"
     },
     "linux": {
       "target": [
@@ -78,7 +78,7 @@
     },
     "directories": {
       "app": "build/app",
-      "buildResources": "assets",
+      "buildResources": "build",
       "output": "build/release"
     },
     "extraResources": [

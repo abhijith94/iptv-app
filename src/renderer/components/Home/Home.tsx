@@ -13,7 +13,7 @@ import {
 } from 'evergreen-ui';
 import { useHistory } from 'react-router';
 import styles from './Home.scss';
-import tvsvg from '../../../../assets/live_tv_white_24dp.svg';
+import tvsvg from '../../../../assets/icon.png';
 
 declare global {
   interface Window {
